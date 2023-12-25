@@ -1,0 +1,11 @@
+.full {
+  width: 100%;
+  height: 100%;
+}
+.full .ant-row {
+  width: 100%;
+  height: 100%;
+}
+.full .ant-row .login {
+  width: 100%;
+}/*# sourceMappingURL=login.css.map */
