@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
-import {saveImage, getImageByKey} from "@/utils/index/background"
+import {saveImage, getImageByKey} from "@/utils/background"
 
 export default defineComponent({
   name: "container",
@@ -69,7 +69,8 @@ export default defineComponent({
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  user-select: none;
+  background-color: #282828;
+  //user-select: none;
 
   .card {
     // border: 1px solid #f0f0f0;

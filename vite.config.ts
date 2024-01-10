@@ -6,7 +6,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/password_manager_vue/",
+  base: "/password_manager_vue",
   plugins: [
     vue(),
     vueJsx(),

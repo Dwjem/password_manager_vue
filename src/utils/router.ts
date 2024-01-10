@@ -3,6 +3,7 @@ import router from "@/router";
 // 获取路由参数
 const getPageParams = (route: any) => {
     let params = route.query;
+    console.log(params)
     if (params?.pms) {
         params = JSON.parse(decodeURI(params.pms))
     }

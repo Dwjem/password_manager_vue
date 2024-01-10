@@ -23,7 +23,7 @@
     </a-form>
 </template>
 <script setup lang="ts">
-import { reactive, ref, onMounted, createVNode, defineEmits } from 'vue';
+import { reactive, ref, onMounted, createVNode } from 'vue';
 import { FileTextOutlined } from '@ant-design/icons-vue';
 import { Modal } from "ant-design-vue";
 import { useRouter } from 'vue-router'

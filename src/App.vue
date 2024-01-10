@@ -1,20 +1,46 @@
 <script setup lang="ts">
-import {ref, watch} from 'vue'
+import {watch} from 'vue'
 import {storeToRefs} from 'pinia';
 import {useRouter, useRoute} from 'vue-router';
 
+import {MenuOutlined, LogoutOutlined} from '@ant-design/icons-vue';
+import {message} from 'ant-design-vue';
+
 import useUserInfoStore from './store/userInfo';
+import useMenuList from './store/menuList';
 
 import {getUserInfoByStorage, delUserInfoByStorage} from './utils/store';
-import {MenuOutlined, LogoutOutlined} from '@ant-design/icons-vue';
-import { message } from 'ant-design-vue';
+
+import config from '@/config';
+import {menuListType} from '@/types/menuListType';
+
 const router = useRouter();
 const route = useRoute();
 
 // pinia
 const userInfoStore = useUserInfoStore();
 const {isLogin} = storeToRefs(userInfoStore);
+const menuListStore = useMenuList();
+const {showLoginOutBtn} = storeToRefs(menuListStore)
 
+
+// 配置菜单
+// 获取本地菜单列表
+menuListStore.menuDB.getAllRecords().then((data: []) => {
+  console.log("App.vue: 获取本地菜单列表", "\n",data)
+  // 本地如果没有存的则设置为配置文件中默认的
+  if (data.length <= 0) {
+    menuListStore.setMenu(config.menuList)
+    // 保存菜单列表到本地
+    config.menuList.forEach((item: menuListType) => {
+      menuListStore.menuDB.addRecord(item)
+    })
+  }
+  // 如果有就使用本地的
+  else {
+    menuListStore.setMenu(data)
+  }
+})
 
 // 获取当前登录的用户信息sessionStorage
 const userInfo = getUserInfoByStorage()
@@ -24,30 +50,15 @@ if (userInfo.username) {
   })
 }
 
+
 watch(isLogin, () => {
   // 判断是否登录
   if (!isLogin.value) {
-    console.log("未登录app.vue");
+    // message.warn('未登录');
     router.push('/login')
     return
-  } else {
-    // router.push('/')
   }
 }, {immediate: true})
-
-// 监听路由，当路由为登录页时隐藏右下角的菜单按钮
-const showMenuBtns = ref<boolean>(false)
-watch(
-    () => route.path,
-    (newPath) => {
-      // 在这里执行路由变化时的逻辑
-      if (newPath == "/login") {
-        showMenuBtns.value = false
-      } else {
-        showMenuBtns.value = true
-      }
-    }, {immediate: true}
-);
 
 // 退出登录
 function logout() {
@@ -70,7 +81,7 @@ const confirm = (e: MouseEvent) => {
   <container>
     <router-view></router-view>
   </container>
-  <a-float-button-group v-if="showMenuBtns" title="菜单" trigger="click" type="default" :style="{ right: '24px' }">
+  <a-float-button-group v-if="showLoginOutBtn" title="菜单" trigger="click" type="default" :style="{ right: '24px' }">
     <template #icon>
       <MenuOutlined/>
     </template>

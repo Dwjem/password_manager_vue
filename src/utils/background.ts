@@ -1,6 +1,6 @@
 import IndexDB from "./indexDB"
 
-const dbName = 'passwordManager';
+const dbName = 'background';
 const storeName = 'background';
 export async function saveImage({key, base64Image}) {
     console.log({key, base64Image})

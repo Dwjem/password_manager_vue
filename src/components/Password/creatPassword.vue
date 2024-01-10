@@ -1,6 +1,4 @@
 <template>
-  <div>
-    <!-- <a-button type="primary" @click="showModal">Open Modal with customized footer</a-button> -->
     <a-modal v-model:open="open" title="生成密码" @ok="handleOk">
       <a-input-group compact>
         <a-input v-model:value="password" style="width: calc(100% - 100px)"/>
@@ -15,34 +13,40 @@
           layout="inline"
           :model="config"
           style="margin-top: 20px;overflow: hidden;transition: all .5s ease;"
-          :style="{height: showConfig?'80px':'0'}"
+          :style="{height: showConfig?'140px':'0'}"
       >
-        <a-form-item :label="getDesc('length')">
-          <a-input-number id="inputNumber" v-model:value="config.length" :min="1" :placeholder="getDesc('length')"/>
+        <a-form-item :label="configDic['length']['desc']">
+          <a-input-number id="inputNumber" v-model:value="config.length" :min="1" :placeholder="configDic.length.desc"/>
         </a-form-item>
         <a-form-item v-for="option in Object.keys(config).filter((option) => option !== 'length')"
-                     :label="getDesc(option)">
+                     :label="configDic[option].desc">
           <a-switch v-if="option!='length'" v-model:checked="config[option]"/>
         </a-form-item>
+        <a-textarea v-model:value="pasChartSetList"
+                    addon-before="字符集" style="resize: none"/>
       </a-form>
+
       <template #footer>
-        <a-button key="back" @click="handleCancel" :icon="h(CloseSquareOutlined)">关闭</a-button>
-        <a-button key="submit" type="primary" :loading="loading" @click="handleOk" :icon="h(CopyOutlined)">复制
+        <a-button type="dashed" @click="savePassword()" :icon="h(SaveOutlined)">
+          保存
+        </a-button>
+        <a-button @click="handleCancel" :icon="h(CloseSquareOutlined)">关闭</a-button>
+        <a-button type="primary" :loading="loading" @click="handleOk" :icon="h(CopyOutlined)">复制
         </a-button>
       </template>
     </a-modal>
-  </div>
 </template>
 <script lang="ts" setup>
-import {ref, h, reactive} from 'vue';
+import {ref, h, reactive, watch } from 'vue';
 import {
   SyncOutlined,
   SettingOutlined,
   CopyOutlined,
-  CloseSquareOutlined
+  CloseSquareOutlined,
+  SaveOutlined
 } from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
-import {generatePassword, pwdConfig, getDesc} from "@/utils/generatePassword";
+import {generatePassword, pwdConfig, configDic} from "@/utils/generatePassword";
 import {throttle} from "lodash-es";
 
 
@@ -57,10 +61,25 @@ const config = reactive<pwdConfig>({
   includeSymbols: false
 });
 const showConfig = ref<boolean>(false);
+// 字符集
+const pasChartSetList = ref("");
+
+const emit = defineEmits(["openSave"]);
+
+//
+watch(config, (n, o) => {
+  //遍历一个对象
+  pasChartSetList.value = ""
+  for (let key in n) {
+    if (n[key]) {
+      pasChartSetList.value += configDic[key].str
+    }
+  }
+}, {immediate: true})
 
 const showModal = () => {
   open.value = true;
-  password.value = generatePassword(config)
+  password.value = generatePassword({length: config.length, chars: pasChartSetList.value})
 };
 
 // 复制操作
@@ -69,7 +88,7 @@ const handleOk = () => {
   window.navigator.clipboard.writeText(password.value)
       .then(() => {
         loading.value = false;
-        open.value = false;
+        // open.value = false;
         message.success('复制成功')
       })
       .catch((error: any) => {
@@ -77,6 +96,13 @@ const handleOk = () => {
         console.error(`Error copying text: ${error}`);
       });
 };
+
+// 保存这个密码
+const savePassword = () => {
+  open.value = false;
+  console.log("密码是：", password.value)
+  emit("openSave",password.value)
+}
 
 const handleCancel = () => {
   open.value = false;
@@ -89,8 +115,7 @@ const openConfig = throttle(() => {
 
 // 刷新密码(重新生成一个)
 const refresh = throttle(() => {
-  console.log(config)
-  password.value = generatePassword(config)
+  password.value = generatePassword({length: config.length, chars: pasChartSetList.value})
 }, 200)
 
 // 导出方法供其他组件使用

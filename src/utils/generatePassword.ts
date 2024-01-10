@@ -14,9 +14,10 @@ export interface pwdConfig {
     includeNumbers: boolean;
     includeSymbols: boolean;
 }
-export function getDesc(key:string):string{
-    if (!key)return ""
-    switch(key){
+
+export function getDesc(key: string): string {
+    if (!key) return ""
+    switch (key) {
         case "length":
             return '密码长度'
         case 'includeUppercase':
@@ -32,42 +33,37 @@ export function getDesc(key:string):string{
     }
 }
 
-export function generatePassword(config: pwdConfig): string {
-    // 定义包含所需字符的字符串
-    const uppercaseChars: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowercaseChars: string = 'abcdefghijklmnopqrstuvwxyz';
-    const numberChars: string = '0123456789';
-    const symbolChars: string = '!@#$%^&*()_-+=<>?';
+export const configDic = {
+    length:{
+        desc: "密码长度",
+        str: ""
+    },
+    includeUppercase: {
+        desc: "包含大写字母",
+        str: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    },
+    includeLowercase: {
+        desc: "包含小写字母",
+        str: "abcdefghijklmnopqrstuvwxyz"
+    },
+    includeNumbers: {
+        desc: "包含数字",
+        str: "0123456789"
+    },
+    includeSymbols: {
+        desc: "包含符号",
+        str: "!@#$%^&*()_-+=<>?"
+    },
+}
 
-    const length = config.length ? config.length : 6,
-        includeUppercase = config.includeUppercase,
-        includeLowercase = config.includeLowercase!=undefined ? config.includeLowercase : true,
-        includeNumbers = config.includeNumbers!=undefined ? config.includeNumbers : 6,
-        includeSymbols = config.includeSymbols;
-
+export function generatePassword({chars,length}): string {
     // 初始化密码
     let password = '';
-
-    // 构建密码字符集合
-    let chars = '';
-    if (includeUppercase) {
-        chars += uppercaseChars;
-    }
-    if (includeLowercase) {
-        chars += lowercaseChars;
-    }
-    if (includeNumbers) {
-        chars += numberChars;
-    }
-    if (includeSymbols) {
-        chars += symbolChars;
-    }
 
     // 生成密码
     for (let i = 0; i < length; i++) {
         const randomIndex = Math.floor(Math.random() * chars.length);
         password += chars.charAt(randomIndex);
     }
-
     return password;
 }
