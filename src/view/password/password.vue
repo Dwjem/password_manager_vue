@@ -1,12 +1,13 @@
 <template>
   <div class="main" v-if="menuID">
+    <a-button @click="goBack()" shape="circle" :icon="h(ArrowLeftOutlined)" title="返回" style="margin-bottom: 10px;"/>
     <a-table :columns="columns" :data-source="dataSource" @resizeColumn="handleResizeColumn" :scroll="{ y: 275 }"
              bordered>
       <template #title>
         <p class="title">密码管理 : {{ menuName }}</p>
       </template>
-      <template #bodyCell="{ column, text, record, index }">
-        <template v-if="['website', 'account', 'pwdStr','remarks'].includes(column.dataIndex)">
+      <template #bodyCell="{ column, text, record }">
+        <template v-if="['website', 'account', 'pwd','remarks'].includes(column.dataIndex)">
           <div>
             <a-input
                 v-if="editableData[record.key]"
@@ -14,11 +15,12 @@
                 style="margin: -5px 0"
             />
             <template v-else>
-              <span v-if="column.dataIndex == 'pwdStr'">
-                <span class="showPwdSpan">{{ text }}</span>
+              <span v-if="column.dataIndex == 'pwd'">
+                <span class="showPwdSpan" v-if="record.show">{{ text }}</span>
+                <span class="showPwdSpan" v-else>{{ pwdStr }}</span>
                 <span class="iconClick">
-                  <EyeTwoTone @click="controlPwd(0, index)"/>
-                  <EyeInvisibleTwoTone @click="controlPwd(1, index)"/>
+                  <EyeTwoTone @click="record.show = true" v-show="!record.show"/>
+                  <EyeInvisibleTwoTone @click="record.show = false" v-show="record.show" />
                   <CopyTwoTone @click="copyPwd(text)"/></span>
               </span>
 
@@ -42,7 +44,7 @@
               <a-popconfirm
                   v-if="dataSource.length"
                   title="Sure to delete?"
-                  @confirm="onDelete(record.key)"
+                  @confirm="onDelete(record.id)"
               >
                 <a>删除</a>
               </a-popconfirm>
@@ -61,10 +63,11 @@
 
 <script lang="ts" setup>
 import type {UnwrapRef} from 'vue';
-import {getCurrentInstance, onMounted, onUnmounted, reactive, ref} from 'vue';
+import {getCurrentInstance, h, onMounted, onUnmounted, reactive, ref,toRaw } from 'vue';
 import {cloneDeep} from 'lodash-es';
 import type {TableColumnsType} from 'ant-design-vue';
-import {CopyTwoTone, EyeTwoTone, EyeInvisibleTwoTone} from '@ant-design/icons-vue';
+import {message} from "ant-design-vue";
+import {ArrowLeftOutlined, CopyTwoTone, EyeInvisibleTwoTone, EyeTwoTone} from '@ant-design/icons-vue';
 import {useRoute} from 'vue-router';
 
 import Empty from "@/components/empty/empty.vue";
@@ -76,6 +79,7 @@ import {getPageParams} from '@/utils/router';
 
 import IndexDB from "@/utils/indexDB";
 import {PASSWORD_DB_NAME} from "@/config";
+
 
 interface DataItem {
   key: string;
@@ -90,7 +94,8 @@ const route = useRoute();
 const params = getPageParams(route);
 const menuListStore = useMenuListStore();
 const curPwdStore = useCurPwdStore();
-
+// 密码占位符
+const pwdStr: string = '●●●●●●';
 
 // 汉字转拼音（不带音调）
 const {proxy: {$convertToPinyin}} = getCurrentInstance();
@@ -98,7 +103,7 @@ const {proxy: {$convertToPinyin}} = getCurrentInstance();
 const {id: menuID, name: menuName}: { id: number, name: string } = menuListStore.findMenu(Number(params.id)) ?? {};
 
 
-onMounted( () =>{
+onMounted(() => {
   getDate()
 })
 
@@ -109,11 +114,12 @@ const passwordDB = new IndexDB(PASSWORD_DB_NAME, $convertToPinyin(menuName))
 const getDate = async () => {
   console.log(menuID, menuName, $convertToPinyin(menuName))
   // log
-  const list = await passwordDB.getAllRecords()
-
-  curPwdStore.list = list
-  data.value = curPwdStore.getData()
-  console.log(data.value)
+  try {
+    curPwdStore.list = await passwordDB.getAllRecords()
+    data.value = curPwdStore.getData()
+  } catch (e: any) {
+    message.error("获取记录失败：" + e.message)
+  }
   // for (let i = 0; i < 100; i++) {
   //   data.value.push({
   //     key: i.toString(),
@@ -143,7 +149,7 @@ const columns = ref<TableColumnsType>([
   },
   {
     title: '密码',
-    dataIndex: 'pwdStr',
+    dataIndex: 'pwd',
     width: 200,
     resizable: true,
     align: 'center'
@@ -168,11 +174,15 @@ const data: Ref<UnwrapRef<any[]>> = ref([]);
 const dataSource = ref(data);
 const editableData: UnwrapRef<Record<string, DataItem>> = reactive({});
 const edit = (key: string) => {
-  editableData[key] = cloneDeep(dataSource.value.filter(item => key === item.key)[0]);
+  editableData[key] = cloneDeep(dataSource.value.find(item => key === item.key));
 };
 
 const save = (key: string) => {
-  Object.assign(dataSource.value.filter(item => key === item.key)[0], editableData[key]);
+  const newData = Object.assign(dataSource.value.find(item => key === item.key), editableData[key]);
+  console.log(toRaw(newData))
+  const saveData = toRaw(newData)
+  console.log(saveData.id)
+  passwordDB.updateRecord(saveData.id,saveData)
   delete editableData[key];
 };
 
@@ -180,26 +190,35 @@ const cancel = (key: string) => {
   delete editableData[key];
 };
 
-const onDelete = (key: string) => {
-  dataSource.value = dataSource.value.filter(item => item.key !== key);
+const onDelete = (id: string) => {
+  dataSource.value = dataSource.value.filter(item => item.id !== id);
+  passwordDB.deleteRecord(id)
 };
 
 function handleResizeColumn(w: number, col: object) {
   col.width = w;
 }
 
-const copyPwd = (e) => {
-  console.log(e)
+// 复制密码
+const copyPwd = (value: string) => {
+  window.navigator.clipboard.writeText(value)
+      .then(() => {
+        message.success('复制成功')
+      })
+      .catch((error: any) => {
+        message.error('复制失败')
+        console.error(`Error copying text: ${error}`);
+      });
 }
 
-// 控制密码显示隐藏
-const controlPwd = (show: number, index: number) => {
-  const span = document.getElementsByClassName("showPwdSpan")[index]
-  console.log(span)
-  span.innerText = 123
-  if (show) {
+// 返回上一页
+const goBack = () => {
+  window.history.go(-1)
+}
 
-  }
+//
+const clickOutside=()=>{
+  console.log("outSide")
 }
 
 onUnmounted(() => {
@@ -223,15 +242,23 @@ onUnmounted(() => {
     margin-bottom: 0;
   }
 
-  .iconClick {
-    margin-left: 5px;
+  .ant-table-row {
+    &:hover .iconClick {
+      display: inline-block;
+    }
 
-    span {
-      font-size: 16px;
-      margin-right: 5px;
-      cursor: pointer;
+    .iconClick {
+      margin-left: 8px;
+      display: none;
+
+      span {
+        font-size: 16px;
+        margin-right: 12px;
+        cursor: pointer;
+      }
     }
   }
+
 
   [data-doc-theme='light'] .ant-table-striped :deep(.table-striped) td {
     background-color: #fafafa;

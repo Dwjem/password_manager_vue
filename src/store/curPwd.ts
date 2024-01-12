@@ -5,8 +5,7 @@ const defa: {
     currentPage: number,
     pageSize: number
 } = {currentPage: 1, pageSize: 10}
-// 密码占位符
-const pwdStr:string = '●●●●●●';
+
 export default defineStore("curPwd", {
     state: () => ({
         list: []
@@ -23,7 +22,7 @@ export default defineStore("curPwd", {
             const endIndex = startIndex + page.pageSize;
 
             // 获取分页后的数据
-            return this.list.slice(startIndex, endIndex).map((item, index) =>({...item, pwdStr, key: index + startIndex}));
+            return this.list.slice(startIndex, endIndex).map((item, index) =>({...item, show: false, key: index + startIndex}));
         },
         setList(data: []) {
             this.list = data;

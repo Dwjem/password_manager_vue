@@ -304,6 +304,65 @@ export default class IndexDB {
     }
 
     /**
+     * 修改一条记录
+     *  @param {string} key 键值名称
+     *  @param {any} newValue 新的值
+     *  @returns {Promise<void>}
+     * */
+    async updateRecord(key: string, newValue: any): Promise<void> {
+        if (!this.db) {
+            // 如果数据库还没有打开，先打开数据库
+            await this.open();
+        }
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([this.storeName], 'readwrite');
+            const store = transaction.objectStore(this.storeName);
+
+            // 使用 get() 方法获取指定 key 值的记录
+            const request = store.get(key);
+            request.onerror = event => {
+                console.error('Failed to get records:', event.target.error);
+                reject(event.target.error);
+            };
+
+            request.onsuccess = event => {
+                let record = event.target.result;
+                console.log(record)
+                if (record) {
+                    // 如果找到了记录，则更新它的值
+                    record = newValue;
+                    // 然后使用 put() 方法将更新后的记录放回数据库
+                    const updateRequest = store.put(record);
+
+                    updateRequest.onerror = event => {
+                        console.error('Failed to update record:', event.target.error);
+                        reject(event.target.error);
+                    }
+
+                    updateRequest.onsuccess = () => {
+                        resolve();
+                    }
+                } else {
+                    // 如果找不到记录，则直接创建一个新的记录
+                    const newRecord = {
+                        [this.keyField]: key,
+                        [this.valueField]: newValue
+                    }
+                    const addRequest = store.add(newRecord);
+                    addRequest.onsuccess = () => {
+                        resolve();
+                    }
+                    addRequest.onerror = event => {
+                        console.error('Failed to add record:', event.target.error);
+                        reject(event.target.error);
+                    }
+                }
+            }
+        })
+    }
+
+
+    /**
      * 关闭数据库
      * */
     close() {
