@@ -118,7 +118,8 @@ const getDate = async () => {
     curPwdStore.list = await passwordDB.getAllRecords()
     data.value = curPwdStore.getData()
   } catch (e: any) {
-    message.error("获取记录失败：" + e.message)
+    // message.error("获取记录失败：" + e.message)
+    curPwdStore.list = []
   }
   // for (let i = 0; i < 100; i++) {
   //   data.value.push({

@@ -14,7 +14,7 @@ interface OptionList {
 }
 
 
-export {
+export type {
     menuListType,
     OptionList
 }

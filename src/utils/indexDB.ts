@@ -135,7 +135,7 @@ export default class IndexDB {
      * 获取数据库中的所有记录
      * @returns {Promise<any[]>} 所有记录的数组
      */
-    async getAllRecords(): Promise<unknown> {
+    async getAllRecords(): Promise<never[]> {
         if (!this.db) {
             // 如果数据库还没有打开，先打开数据库
             await this.open();
