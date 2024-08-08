@@ -20,7 +20,7 @@ jobs:
 
       - name: Install and Build                  # 第二步：下载依赖和构建
         run: |
-          # npm install
+          npm install
           npm run build-only
           cp dist/index.html dist/404.html
 
