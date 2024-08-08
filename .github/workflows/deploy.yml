@@ -20,8 +20,9 @@ jobs:
 
       - name: Install and Build                  # 第二步：下载依赖和构建
         run: |
-          npm install
+          # npm install
           npm run build-only
+          cp dist/index.html dist/404.html
 
       - name: Deploy                           # 第三步：部署
         uses: JamesIves/github-pages-deploy-action@v4
