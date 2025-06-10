@@ -1,1 +1,0 @@
-import{K as s}from"./index-628a0e06.js";const t=o=>{let e=o.query;return console.log(e),e!=null&&e.pms&&(e=JSON.parse(decodeURI(e.pms))),e},p=o=>{let{path:e,params:r}=o;s.push({path:e,query:{...r}})};export{t as a,p as g};
