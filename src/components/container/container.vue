@@ -9,26 +9,27 @@
 <script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {saveImage, getImageByKey} from "@/utils/background"
+import defaultBackground from '@/assets/images/index_bg.jpg';
 
 export default defineComponent({
   name: "container",
   setup() {
-    const background_url = ref("https://dwjem.github.io/index_bg.jpg");
-    const maxContent = ref<HTMLElement>(null);
-    getImageByKey(background_url.value).then(value => {
+    const background_url = defaultBackground;
+    const maxContent = ref<HTMLImageElement>();
+    getImageByKey(background_url).then(value => {
       const image = value?.image
       // 本地有地址为background_url的记录，调用本地indexDB中的
       if (image) {
-        maxContent.value.style.backgroundImage = `url(${image})`
+        maxContent.value!.style.backgroundImage = `url(${image})`
       } else {
         // 否则请求该图片地址，并且保存到本地
         const background_img = new Image();
         background_img.setAttribute('crossOrigin', 'anonymous');
         background_img.onload = (function (e: any) {
           // 图片加载成功后的回调
-          maxContent.value.style.backgroundImage = `url(${ImageToBase64(this)})`
+          maxContent.value!.style.backgroundImage = `url(${ImageToBase64(this)})`
         })
-        background_img.src = background_url.value;// 图片地址
+        background_img.src = background_url;// 图片地址
       }
     })
 
@@ -74,6 +75,9 @@ export default defineComponent({
 
   .card {
     // border: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 1247px;
     max-height: 80%;
     overflow: auto;
@@ -91,5 +95,13 @@ export default defineComponent({
       display: none;
     }
   }
+}
+
+@media screen and (max-width: 1247px) {
+  .max-content {.card {
+    max-height: 100%;
+    height: 100%;
+    border-radius: 0;
+  }}
 }
 </style>

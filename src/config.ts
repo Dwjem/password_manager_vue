@@ -1,4 +1,4 @@
-import {menuListType} from './types/menuListType';
+import type {menuListType} from './types/menuListType';
 
 // 保存默认配置
 export const menuList: menuListType[] = [

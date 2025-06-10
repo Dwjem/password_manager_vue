@@ -85,10 +85,10 @@ const showModal = () => {
 // 复制操作
 const handleOk = () => {
   loading.value = true;
+  console.log(password.value);
   window.navigator.clipboard.writeText(password.value)
       .then(() => {
         loading.value = false;
-        // open.value = false;
         message.success('复制成功')
       })
       .catch((error: any) => {

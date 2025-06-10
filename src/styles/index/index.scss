@@ -1,9 +1,13 @@
 .list {
     margin-bottom: 30px !important;
+    // display: grid;
+    // grid-template-columns: repeat(8, 1fr);
+    // grid-gap: 30px;
+
 
     .list_item {
         height: 180px;
-        width: 120px;
+        width: 100%;
         border-radius: 25px;
         background: #ccc;
         color: #fff;

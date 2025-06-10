@@ -1,4 +1,4 @@
-import {createRouter, createWebHistory} from 'vue-router'
+import {createRouter, createWebHashHistory} from 'vue-router'
 import useMenuList from "@/store/menuList"
 import {storeToRefs} from "pinia";
 
@@ -27,7 +27,7 @@ const routes = [
 ]
 
 const router = createRouter({
-    history: createWebHistory("/password_manager_vue"),
+    history: createWebHashHistory("/password_manager_vue"),
     routes
 })
 
