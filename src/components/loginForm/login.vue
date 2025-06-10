@@ -7,7 +7,7 @@
         </a-form-item>
 
         <a-form-item label="密码" name="password" :rules="[{ required: true, message: '请输入你的密码' }]">
-            <a-input-password v-model:value="formState.password" ref="passwordIpt" />
+            <a-input-password v-model:value="formState.password" ref="passwordIpt" placeholder="请输入你的密码" />
         </a-form-item>
 
 <!--        <a-form-item name="remember" :wrapper-col="{ offset: 4, span: 16 }">-->

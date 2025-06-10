@@ -18,6 +18,7 @@
       <a-button @click="open = false" :icon="h(CloseSquareOutlined)">取消</a-button>
       <a-button @click="reset()" :icon="h(ClearOutlined)">重置</a-button>
       <a-button type="primary" @click="save" :icon="h(SaveOutlined)">保存</a-button>
+      <a-button type="primary" @click="save_test" :icon="h(SaveOutlined)">保---存</a-button>
     </template>
   </a-modal>
 </template>
@@ -28,7 +29,7 @@ import {Rule} from "ant-design-vue/es/form";
 
 import {passwordType, psdForm} from "@/types/password";
 import {menuListType} from "@/types/menuListType";
-import {addPwd} from "@/utils/password"
+import {addPwd, creatTabel} from "@/utils/password"
 
 export default {
   name: "savePassword",
@@ -112,6 +113,13 @@ export default {
       })
     }
 
+    const save_test = ()=>{
+        savePasswordForm.value.validate().then(()=>{
+            console.log('保存**----密码')
+            // creatTabel("test_pwd", "test_pwd_id", ["asd","qwe"])
+        })
+    }
+
     // 重置
     const reset = () => {
       for (const key in formState) {
@@ -135,7 +143,8 @@ export default {
       rules,
       dictionaries,
       showModal,
-      savePasswordForm
+      savePasswordForm,
+        save_test
     }
   }
 }
